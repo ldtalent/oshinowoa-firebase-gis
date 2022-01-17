@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:oshinowoa_firebase_gis/home_screen.dart';
+import 'package:oshinowoa_firebase_gis/screens/home_screen.dart';
 
 void main() {
   runApp(const GisApp());
