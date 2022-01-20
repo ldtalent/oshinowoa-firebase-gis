@@ -53,42 +53,50 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('GIS App'),
       ),
-      body: SizedBox(
-        child: Center(
-          child: SfMaps(
-            layers: <MapShapeLayer>[
-              MapShapeLayer(
-                source: _mapSource,
-                showDataLabels: true,
-                legend: const MapLegend(MapElement.shape),
-                tooltipSettings: MapTooltipSettings(
-                  color: Colors.grey[700],
-                  strokeColor: Colors.white,
-                  strokeWidth: 2,
-                ),
-                strokeColor: Colors.white,
-                strokeWidth: 0.5,
-                shapeTooltipBuilder: (BuildContext context, int index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      _data[index].stateCode,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  );
-                },
-                dataLabelSettings: MapDataLabelSettings(
-                  textStyle: TextStyle(
-                    color: Colors.black26,
-                    fontWeight: FontWeight.w400,
-                    fontSize: Theme.of(context).textTheme.caption!.fontSize,
-                  ),
-                ),
-              ),
-            ],
-          ),
+      body: const SizedBox(
+        child: SfMaps(
+          layers: [
+            MapTileLayer(
+                urlTemplate:
+                    'https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?apiKey=AAPKc025b874e0d4483ab9dc13d1375d51f2x29YhHxFBE2k6K4c8eT7DMIB6WyFAruIvmuLq4gB0LhmSJYmSTg3ahL5UwDd_zSr',
+                initialFocalLatLng: MapLatLng(-23.698042, 133.880753),
+                initialZoomLevel: 3),
+          ],
         ),
       ),
     );
   }
 }
+
+
+
+
+
+// MapShapeLayer(
+//                 source: _mapSource,
+//                 showDataLabels: true,
+//                 legend: const MapLegend(MapElement.shape),
+//                 tooltipSettings: MapTooltipSettings(
+//                   color: Colors.grey[700],
+//                   strokeColor: Colors.white,
+//                   strokeWidth: 2,
+//                 ),
+//                 strokeColor: Colors.white,
+//                 strokeWidth: 0.5,
+//                 shapeTooltipBuilder: (BuildContext context, int index) {
+//                   return Padding(
+//                     padding: const EdgeInsets.all(8.0),
+//                     child: Text(
+//                       _data[index].stateCode,
+//                       style: const TextStyle(color: Colors.white),
+//                     ),
+//                   );
+//                 },
+//                 dataLabelSettings: MapDataLabelSettings(
+//                   textStyle: TextStyle(
+//                     color: Colors.black26,
+//                     fontWeight: FontWeight.w400,
+//                     fontSize: Theme.of(context).textTheme.caption!.fontSize,
+//                   ),
+//                 ),
+//               )

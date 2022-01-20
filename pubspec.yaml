@@ -20,6 +20,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_screenutil: ^5.1.0
   syncfusion_flutter_maps: ^19.4.42-beta
+  firebase_core: ^1.11.0
+  cloud_firestore: ^3.1.6
+  rename: ^2.0.1
   
 
 dev_dependencies:

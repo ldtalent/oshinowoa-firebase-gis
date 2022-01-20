@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "681355289723",
+    "project_id": "gis-app-72213",
+    "storage_bucket": "gis-app-72213.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:681355289723:android:f1acceab37f50c0904eede",
+        "android_client_info": {
+          "package_name": "com.oshinowo.oshinowoa_firebase_gis"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "681355289723-49o8q3ntsn9c2t7g1avcjt9knveqo2q9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGy8w20IERPMF6k5ugT7-WEe4ify6InNs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "681355289723-49o8q3ntsn9c2t7g1avcjt9knveqo2q9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

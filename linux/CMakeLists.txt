@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(runner LANGUAGES CXX)
 
-set(BINARY_NAME "oshinowoa_firebase_gis")
-set(APPLICATION_ID "com.example.oshinowoa_firebase_gis")
+set(BINARY_NAME "Flutter Gis App")
+set(APPLICATION_ID "com.oshinowo.oshinowoa_firebase_gis")
 
 cmake_policy(SET CMP0063 NEW)
 
