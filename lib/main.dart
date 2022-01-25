@@ -12,6 +12,8 @@ void main() async {
 class GisApp extends StatelessWidget {
   const GisApp({Key? key}) : super(key: key);
 
+  // apiKey: AIzaSyAADUPUSMGOUrCUG8qWPkeypVaWPOEdnSo
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
