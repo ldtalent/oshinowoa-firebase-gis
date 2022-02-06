@@ -1,6 +1,4 @@
-import 'dart:math';
 import 'dart:async';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -17,31 +15,31 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Geolocator location = Geolocator();
+  GoogleMapController? mapController;
 
-  // Position initialPosition = Geolocator.getCurrentPosition();
-  // static const LatLng center = LatLng(initialPosition.latitude, initialPosition.lo);
+  CameraPosition _kInitialPosition = const CameraPosition(
+    target: LatLng(19.07, 72.87),
+    zoom: 15,
+  );
 
   FirebaseFirestore firestore = FirebaseFirestore.instance;
   Geoflutterfire geo = Geoflutterfire();
 
-  GoogleMapController? mapController;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   MarkerId? selectedMarker;
   int _markerIdCounter = 1;
   LatLng? markerPosition;
 
   BehaviorSubject<double> radius = BehaviorSubject.seeded(100.0);
-
   Stream<dynamic>? query;
 
   StreamSubscription? subscription;
 
-  void _onMapCreated(GoogleMapController controller) {
-    _startQuery();
-    setState(() {
-      mapController = controller;
-    });
+  Future<Position> getLocation() async {
+    Position location = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.low,
+    );
+    return location;
   }
 
   @override
@@ -53,17 +51,16 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         children: [
           GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(-33.852, 151.211),
-              zoom: 10,
-            ),
+            initialCameraPosition: _kInitialPosition,
             onMapCreated: _onMapCreated,
             myLocationEnabled: true,
-            myLocationButtonEnabled: true,
+            myLocationButtonEnabled: false,
             mapType: MapType.hybrid,
             compassEnabled: true,
+            onCameraMove: _updateCameraPosition,
             markers: Set<Marker>.of(markers.values),
             // trafficEnabled: true,
+            zoomControlsEnabled: false,
           ),
           Positioned(
             bottom: 80,
@@ -80,11 +77,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.all(
                     3.0,
                   ),
-                  onPressed: _addGeoPoint,
                   icon: const Icon(
                     Icons.pin_drop,
                     color: Colors.white,
                   ),
+                  onPressed: _addGeoPoint,
                 ),
               ),
             ),
@@ -109,69 +106,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Future<DocumentReference> _addGeoPoint() async {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+  void _onMapCreated(GoogleMapController controller) {
+    _startQuery();
+    setState(() {
+      mapController = controller;
+    });
+  }
+
+  void _updateCameraPosition(CameraPosition position) {
+    setState(() {
+      _kInitialPosition = position;
+    });
+  }
+
+  Future _animateToUser(double lat, double lng) async {
+    return mapController!.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: LatLng(lat, lng),
+          zoom: 15,
+        ),
+      ),
     );
+  }
+
+  Future<DocumentReference> _addGeoPoint() async {
+    Position position = await getLocation();
+    await _animateToUser(position.latitude, position.longitude);
     GeoFirePoint point = geo.point(
       latitude: position.latitude,
       longitude: position.longitude,
     );
-    var store = firestore.collection('location').add({
+    return firestore.collection('locations').add({
       'position': point.data,
-      'name': 'Ade',
+      'name': 'User',
     });
-    return store;
   }
 
-  // void _addMarker() {
-  //   final int markerCount = markers.length;
-  //   if (markerCount == 12) {
-  //     return;
-  //   }
-  //   final String markerIdVal = 'marker_id_$_markerIdCounter';
-  //   _markerIdCounter++;
-  //   final MarkerId markerId = MarkerId(markerIdVal);
-
-  //   final Marker marker = Marker(
-  //     markerId: markerId,
-  //     position: mapController.animateCamera(cameraUpdate),
-  //     infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
-  //     onTap: () => _onMarkerTapped(markerId),
-  //   );
-
-  //   setState(() {
-  //     markers[markerId] = marker;
-  //   });
-  // }
-
-  void _updateMarkers(List<DocumentSnapshot> documentList) async {
-    Position loc = await Geolocator.getCurrentPosition();
-    // print(documentList);
+  Future<Map<MarkerId, Marker>> _updateMarkers(
+      List<DocumentSnapshot> documentList) async {
     mapController?.dispose();
-    documentList.forEach((DocumentSnapshot document) {
-      GeoPoint pos = document.get('position')['geopoint'];
-      double distance = document.get('distance');
-
-      GeoFirePoint center = geo.point(latitude: loc.latitude, longitude: loc.longitude);
-
-      final String markerIdVal = 'marker_id_$_markerIdCounter';
+    Position userCurrentLocation = await getLocation();
+    GeoFirePoint point = geo.point(
+      latitude: userCurrentLocation.latitude,
+      longitude: userCurrentLocation.longitude,
+    );
+    for (var document in documentList) {
+      GeoPoint position = document['position']['geopoint'];
+      var distance =
+          point.distance(lat: position.latitude, lng: position.longitude);
+      final String markerIdVal = 'Marker-$_markerIdCounter';
       _markerIdCounter++;
       final MarkerId markerId = MarkerId(markerIdVal);
-      var marker = Marker(
+      final Marker marker = Marker(
         markerId: markerId,
-        position: LatLng(
-          center.latitude + sin(_markerIdCounter * pi / 6.0) / 20.0,
-          center.longitude + cos(_markerIdCounter * pi / 6.0) / 20.0,
-        ),
-        infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
+        position: LatLng(position.latitude, position.longitude),
+        infoWindow: InfoWindow(
+            title: markerIdVal,
+            snippet: '$distance kilometers from present location'),
         onTap: () => _onMarkerTapped(markerId),
       );
-
       setState(() {
         markers[markerId] = marker;
       });
-    });
+    }
+    return markers;
   }
 
   void _onMarkerTapped(MarkerId markerId) {
@@ -191,41 +190,18 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         );
         markers[markerId] = newMarker;
-
         markerPosition = null;
       });
     }
   }
 
-  void _animateToUser() async {
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low,
-    );
-    mapController!.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          target: LatLng(
-            position.latitude,
-            position.longitude,
-          ),
-          zoom: 10,
-        ),
-      ),
-    );
-  }
-
   _startQuery() async {
     // Get users location
-    Position pos = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low,
-    );
-    double lat = pos.latitude;
-    double lng = pos.longitude;
-
+    Position pos = await getLocation();
     // Make a referece to firestore
     var ref = firestore.collection('locations');
-    GeoFirePoint center = geo.point(latitude: lat, longitude: lng);
-
+    GeoFirePoint center =
+        geo.point(latitude: pos.latitude, longitude: pos.longitude);
     // subscribe to query
     subscription = radius.switchMap((rad) {
       return geo.collection(collectionRef: ref).within(
@@ -243,7 +219,6 @@ class _HomeScreenState extends State<HomeScreen> {
     };
     final zoom = zoomMap[value];
     mapController?.moveCamera(CameraUpdate.zoomTo(zoom!));
-
     setState(() {
       radius.add(value);
     });
